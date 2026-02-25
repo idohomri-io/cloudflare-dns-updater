@@ -1,6 +1,6 @@
 services:
   cfddns:
-    image: ghcr.io/idohomri-io/cfddns:latest
+    image: ghcr.io/idohomri-io/cloudflare-dns-updater:latest
     container_name: cfddns
     restart: unless-stopped
     environment:

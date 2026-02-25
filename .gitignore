@@ -209,5 +209,4 @@ __marimo__/
 # Deploy
 .deploy/
 .dockerignore
-Dockerfile
-docker-compose.yml
+build-docker.sh
