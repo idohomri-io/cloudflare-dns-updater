@@ -55,9 +55,9 @@ Copy the example below into a `docker-compose.yml` and fill in your values:
 
 ```yaml
 services:
-  cfddns:
-    image: ghcr.io/idohomri-io/cfddns:latest
-    container_name: cfddns
+  cloudflare-dns-updater:
+    image: ghcr.io/idohomri-io/cloudflare-dns-updater:latest
+    container_name: cloudflare-dns-updater
     restart: unless-stopped
     environment:
       - CF_API_TOKEN=your_api_token_here
@@ -74,7 +74,7 @@ docker compose up -d
 
 ```bash
 docker run -d \
-  --name cfddns \
+  --name cloudflare-dns-updater \
   --restart unless-stopped \
   -e CF_API_TOKEN=your_api_token_here \
   -e DNS_RECORD_0=zone_id:record_id:home.example.com \
@@ -139,7 +139,7 @@ The service logs to stdout. Each check produces a line per record:
 View live logs with Docker:
 
 ```bash
-docker logs -f cfddns
+docker logs -f cloudflare-dns-updater
 ```
 
 ---
@@ -147,5 +147,5 @@ docker logs -f cfddns
 ## Building from source
 
 ```bash
-docker build --platform linux/amd64 -t cfddns .
+docker build --platform linux/amd64 -t cloudflare-dns-updater .
 ```
