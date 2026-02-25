@@ -87,7 +87,7 @@ def main():
     interval = cfg["interval"]
 
     record_names = ", ".join(r["name"] for r in records)
-    print(f"Starting cfddns | records: {record_names} | interval: {interval}s")
+    print(f"Starting cloudflare-dns-updater | records: {record_names} | interval: {interval}s")
 
     while True:
         try:
