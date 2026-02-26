@@ -19,10 +19,16 @@ def get_env():
         if val is None:
             break
         parts = val.split(":")
-        if len(parts) != 3 or not all(parts):
-            print(f"Invalid format for DNS_RECORD_{i}: expected 'zone_id:record_id:name'", file=sys.stderr)
+        if len(parts) not in (3, 4) or not all(parts[:3]):
+            print(f"Invalid format for DNS_RECORD_{i}: expected 'zone_id:record_id:name[:proxied]'", file=sys.stderr)
             sys.exit(1)
-        records.append({"zone_id": parts[0], "record_id": parts[1], "name": parts[2]})
+        proxied = True
+        if len(parts) == 4:
+            if parts[3].lower() not in ("true", "false"):
+                print(f"Invalid proxied value for DNS_RECORD_{i}: expected 'true' or 'false'", file=sys.stderr)
+                sys.exit(1)
+            proxied = parts[3].lower() == "true"
+        records.append({"zone_id": parts[0], "record_id": parts[1], "name": parts[2], "proxied": proxied})
         i += 1
 
     if not records:
@@ -52,7 +58,7 @@ def get_dns_ip(token, zone_id, record_id):
     resp.raise_for_status()
     return resp.json()["result"]["content"]
 
-def update_dns(token, zone_id, record_id, name, ip, interval):
+def update_dns(token, zone_id, record_id, name, ip, proxied, interval):
     now = datetime.now()
     next_check = now + timedelta(seconds=interval)
     comment = (
@@ -72,7 +78,7 @@ def update_dns(token, zone_id, record_id, name, ip, interval):
             "content": ip,
             "ttl": 120,
             "comment": comment,
-            "proxied": True,
+            "proxied": proxied,
         },
         timeout=10,
     )
@@ -102,6 +108,7 @@ def main():
             zone_id = record["zone_id"]
             record_id = record["record_id"]
             name = record["name"]
+            proxied = record["proxied"]
 
             try:
                 dns_ip = get_dns_ip(token, zone_id, record_id)
@@ -114,7 +121,7 @@ def main():
             else:
                 print(f"{now} [{name}] Updating IP from {dns_ip} to {current_ip}")
                 try:
-                    update_dns(token, zone_id, record_id, name, current_ip, interval)
+                    update_dns(token, zone_id, record_id, name, current_ip, proxied, interval)
                 except Exception as e:
                     print(f"{now} [{name}] Failed to update DNS: {e}")
 

@@ -9,7 +9,7 @@ A lightweight Python background service that keeps your Cloudflare DNS A records
 3. Updates only the records whose IP has changed
 4. Repeats on a configurable interval (default: 5 minutes)
 
-Records are set as **proxied**, **TTL 120**, and tagged with an automated comment on each update.
+Records are set with **TTL 120** and tagged with an automated comment on each update. The proxied flag is configurable per record.
 
 ---
 
@@ -28,7 +28,7 @@ All configuration is done via environment variables.
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `CF_API_TOKEN` | Yes | — | Cloudflare API token with DNS edit permissions |
-| `DNS_RECORD_0` | Yes | — | First DNS record in `zone_id:record_id:name` format |
+| `DNS_RECORD_0` | Yes | — | First DNS record in `zone_id:record_id:name:[true/false)]` format |
 | `DNS_RECORD_1` | No | — | Additional records follow the same format |
 | `DNS_RECORD_N` | No | — | Add as many as needed (sequential, starting from 0) |
 | `INTERVAL` | No | `300` | How often to check for IP changes, in seconds |
@@ -36,13 +36,15 @@ All configuration is done via environment variables.
 ### DNS record format
 
 ```
-DNS_RECORD_0=<zone_id>:<record_id>:<record_name>
+DNS_RECORD_0=<zone_id>:<record_id>:<record_name>[:<proxied>]
 ```
+
+The `proxied` field is optional and defaults to `true`. Set it to `false` to disable Cloudflare proxying for that record.
 
 Example:
 ```
 DNS_RECORD_0=abc123def456:xyz789:home.example.com
-DNS_RECORD_1=abc123def456:uvw012:vpn.example.com
+DNS_RECORD_1=abc123def456:uvw012:vpn.example.com:false
 ```
 
 ---
@@ -61,7 +63,7 @@ services:
     restart: unless-stopped
     environment:
       - CF_API_TOKEN=your_api_token_here
-      - DNS_RECORD_0=zone_id:record_id:home.example.com
+      - DNS_RECORD_0=zone_id:record_id:home.example.com:true
       # - DNS_RECORD_1=zone_id:record_id:vpn.example.com
       - INTERVAL=300
 ```
@@ -77,7 +79,7 @@ docker run -d \
   --name cloudflare-dns-updater \
   --restart unless-stopped \
   -e CF_API_TOKEN=your_api_token_here \
-  -e DNS_RECORD_0=zone_id:record_id:home.example.com \
+  -e DNS_RECORD_0=zone_id:record_id:home.example.com:true \
   -e INTERVAL=300 \
   ghcr.io/idohomri-io/cloudflare-dns-updater:latest
 ```
@@ -88,7 +90,7 @@ docker run -d \
 pip install requests
 
 CF_API_TOKEN=your_token \
-DNS_RECORD_0=zone_id:record_id:home.example.com \
+DNS_RECORD_0=zone_id:record_id:home.example.com:true \
 python app.py
 ```
 
